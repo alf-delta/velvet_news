@@ -767,15 +767,96 @@
       opacity: 1;
     }
 
-    /* ── Responsive ────────────────────────────────────── */
-    @media (max-width: 640px) {
-      .header-inner { padding: 0 16px; height: 60px; }
-      .logo { font-size: 28px; }
-      .cat-nav-inner { padding: 0 16px; }
-      .toolbar-inner { padding: 10px 16px; }
-      .grid-wrap { padding: 0 16px 48px; }
+    /* ── Responsive — tablet ────────────────────────────── */
+    @media (max-width: 768px) {
+      .header-inner { padding: 0 20px; height: 60px; gap: 12px; }
+      .logo { font-size: 26px; }
       .stat-badge { display: none; }
+      .cat-nav { top: 60px; }
+      .cat-nav-inner { padding: 0 20px; }
+      .cat-btn { height: 40px; padding: 0 14px; font-size: 12px; }
+      .toolbar-inner { padding: 10px 20px; flex-wrap: wrap; gap: 10px; }
+      .grid-wrap { padding: 0 20px 40px; }
+      .card { padding: 20px 0; }
       .card-title { font-size: 22px; }
+    }
+
+    /* ── Responsive — mobile ────────────────────────────── */
+    @media (max-width: 480px) {
+      /* Header */
+      .header-inner { padding: 0 16px; height: 54px; gap: 8px; }
+      .logo { font-size: 20px; letter-spacing: 0.02em; }
+      #fetch-btn { height: 30px; padding: 0 12px; font-size: 10px; letter-spacing: 0.12em; }
+      .view-switcher { display: none; } /* скрываем switcher — на мобиле только list */
+      #admin-btn { font-size: 14px; }
+
+      /* Cat nav */
+      .cat-nav { top: 54px; }
+      .cat-nav-inner { padding: 0 12px; gap: 0; }
+      .cat-btn { height: 36px; padding: 0 10px; font-size: 11px; letter-spacing: 1px; }
+
+      /* Toolbar — стекуем в две строки */
+      .toolbar-inner {
+        padding: 10px 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .toolbar-inner > div { width: 100%; }
+      .toolbar-inner > div:last-child {
+        display: flex;
+        gap: 8px;
+      }
+      .source-select { flex: 1; }
+      .mark-all-btn { white-space: nowrap; }
+
+      /* Grid */
+      .grid-wrap { padding: 0 16px 32px; padding-top: 16px !important; }
+      .grid { grid-template-columns: 1fr; }
+      .card { padding: 18px 0; gap: 8px; }
+      .card-title { font-size: 20px; }
+      .card-snippet { -webkit-line-clamp: 3; }
+
+      /* List view на мобиле — колонка */
+      .grid.view-list .card {
+        display: flex;
+        flex-direction: column;
+      }
+      .grid.view-list .card-footer {
+        border-left: none;
+        padding-left: 0;
+        flex-direction: row;
+        align-items: center;
+        border-top: 1px solid var(--border);
+        padding-top: 10px;
+        min-width: unset;
+        width: auto;
+      }
+      .grid.view-list .card-meta { flex-direction: row; gap: 0; }
+      .grid.view-list .tag + .tag::before { content: '/'; margin-right: 10px; color: var(--border); }
+      .grid.view-list .card-date { white-space: nowrap; }
+
+      /* Fetch overlay */
+      .scan-grid {
+        grid-template-columns: repeat(5, 16px);
+        gap: 8px;
+      }
+      .scan-dot { width: 16px; height: 16px; }
+      .overlay-count { font-size: 28px; }
+      #overlay-dismiss { top: 16px; right: 16px; }
+
+      /* Admin modal */
+      #admin-modal > div {
+        padding: 28px 20px;
+        margin: 0 16px;
+      }
+
+      /* Load more */
+      .load-more-wrap { padding: 24px 16px 40px; }
+      #load-more-btn { width: 100%; }
+
+      /* Toast */
+      .toast { left: 16px; right: 16px; bottom: 16px; text-align: center; }
     }
   </style>
 </head>
@@ -1227,7 +1308,8 @@ document.getElementById('mark-all-btn').addEventListener('click', async () => {
 document.getElementById('load-more-btn').addEventListener('click', () => loadArticles(false));
 
 // ── View switcher ─────────────────────────────────────────
-let currentView = localStorage.getItem('view') || 'grid';
+const isMobile = window.innerWidth <= 480;
+let currentView = localStorage.getItem('view') || (isMobile ? 'list' : 'grid');
 
 function applyView(v) {
   const grid = document.getElementById('grid');
