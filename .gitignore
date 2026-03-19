@@ -1,0 +1,17 @@
+# Database & logs
+*.db
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# macOS
+.DS_Store
+
+# Exports
+articles_export.json
