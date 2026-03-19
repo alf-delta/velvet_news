@@ -161,6 +161,8 @@ def api_sources():
 # ── Main ──────────────────────────────────────────────────────
 
 if __name__ == "__main__":
+    import os
     init_db()
-    print("\n  NOIR is running → http://localhost:8080\n")
-    app.run(debug=False, port=8080)
+    port = int(os.environ.get("PORT", 8080))
+    print(f"\n  NOIR is running → http://localhost:{port}\n")
+    app.run(debug=False, host="0.0.0.0", port=port)
