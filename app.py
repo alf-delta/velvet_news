@@ -171,12 +171,14 @@ def api_sources():
 def api_admin_reset():
     if not check_admin(request):
         return jsonify({"ok": False, "message": "Unauthorized"}), 403
-    conn = get_conn()
-    conn.execute("DELETE FROM articles")
-    conn.execute("VACUUM")
-    conn.commit()
-    conn.close()
-    return jsonify({"ok": True, "message": "Database cleared"})
+    try:
+        conn = get_conn()
+        conn.execute("DELETE FROM articles")
+        conn.commit()
+        conn.close()
+        return jsonify({"ok": True, "message": "Database cleared"})
+    except Exception as e:
+        return jsonify({"ok": False, "message": str(e)}), 500
 
 
 # ── Main ──────────────────────────────────────────────────────

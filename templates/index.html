@@ -1268,25 +1268,33 @@ async function adminReset() {
   const msg   = document.getElementById('admin-msg');
   if (!token) { msg.textContent = 'Enter token'; return; }
 
-  const res  = await fetch('/api/admin/reset', {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ token }),
-  });
-  const data = await res.json();
+  msg.style.color = 'var(--muted)';
+  msg.textContent = 'Working…';
 
-  if (data.ok) {
-    msg.style.color = 'green';
-    msg.textContent = 'Done — database cleared';
-    setTimeout(() => {
-      closeAdminModal();
-      loadArticles(true);
-      updateStats();
-    }, 1000);
-  } else {
+  try {
+    const res  = await fetch('/api/admin/reset', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ token }),
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      msg.style.color = 'green';
+      msg.textContent = 'Done — database cleared';
+      setTimeout(() => {
+        closeAdminModal();
+        loadArticles(true);
+        updateStats();
+      }, 1000);
+    } else {
+      msg.style.color = 'var(--red)';
+      msg.textContent = data.message || 'Wrong token';
+      document.getElementById('admin-token-input').value = '';
+    }
+  } catch (e) {
     msg.style.color = 'var(--red)';
-    msg.textContent = 'Wrong token';
-    document.getElementById('admin-token-input').value = '';
+    msg.textContent = 'Error: ' + e.message;
   }
 }
 
