@@ -4,6 +4,7 @@ Run: python app.py
 Open: http://localhost:5000
 """
 
+import os
 import threading
 from datetime import datetime
 from flask import Flask, jsonify, request, render_template
@@ -14,6 +15,14 @@ from monitor import DB_PATH, init_db, run_pipeline, SOURCES
 app = Flask(__name__)
 
 fetch_state = {"running": False, "last_run": None, "last_new": 0, "error": None}
+
+ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", "")
+
+
+def check_admin(req) -> bool:
+    data = req.get_json(silent=True) or {}
+    token = data.get("token", "")
+    return ADMIN_TOKEN and token == ADMIN_TOKEN
 
 
 def get_conn():
@@ -156,6 +165,18 @@ def api_fetch():
 @app.route("/api/sources")
 def api_sources():
     return jsonify([s["name"] for s in SOURCES])
+
+
+@app.route("/api/admin/reset", methods=["POST"])
+def api_admin_reset():
+    if not check_admin(request):
+        return jsonify({"ok": False, "message": "Unauthorized"}), 403
+    conn = get_conn()
+    conn.execute("DELETE FROM articles")
+    conn.execute("VACUUM")
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True, "message": "Database cleared"})
 
 
 # ── Main ──────────────────────────────────────────────────────

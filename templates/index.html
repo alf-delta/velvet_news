@@ -798,9 +798,25 @@
         </button>
       </div>
       <button id="fetch-btn">Fetch ›</button>
+      <button id="admin-btn" title="Admin" style="background:transparent;border:none;cursor:pointer;color:var(--border);font-size:16px;padding:4px;line-height:1;transition:color 0.15s;" onmouseover="this.style.color='var(--muted)'" onmouseout="this.style.color='var(--border)'">⚙</button>
     </div>
   </div>
 </header>
+
+<!-- Admin modal -->
+<div id="admin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:#fff;padding:40px;max-width:380px;width:90%;border-top:3px solid var(--red);">
+    <div style="font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:24px;color:var(--black);">Admin Access</div>
+    <input id="admin-token-input" type="password" placeholder="Enter admin token"
+      style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);font-family:'Roboto',sans-serif;font-size:13px;margin-bottom:16px;outline:none;box-sizing:border-box;"
+      onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--border)'">
+    <div style="display:flex;gap:8px;">
+      <button onclick="adminReset()" style="flex:1;height:38px;background:var(--red);border:none;color:#fff;font-family:'Ubuntu',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;cursor:pointer;">Reset DB</button>
+      <button onclick="closeAdminModal()" style="height:38px;padding:0 16px;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Ubuntu',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;cursor:pointer;">Cancel</button>
+    </div>
+    <div id="admin-msg" style="margin-top:12px;font-family:'Roboto',sans-serif;font-size:12px;color:var(--muted);min-height:18px;"></div>
+  </div>
+</div>
 
 <!-- Category nav -->
 <div class="cat-nav">
@@ -1224,6 +1240,55 @@ function applyView(v) {
 
 document.getElementById('btn-grid').addEventListener('click', () => applyView('grid'));
 document.getElementById('btn-list').addEventListener('click', () => applyView('list'));
+
+// ── Admin ─────────────────────────────────────────────────
+document.getElementById('admin-btn').addEventListener('click', () => {
+  const modal = document.getElementById('admin-modal');
+  modal.style.display = 'flex';
+  document.getElementById('admin-token-input').value = '';
+  document.getElementById('admin-msg').textContent = '';
+  setTimeout(() => document.getElementById('admin-token-input').focus(), 50);
+});
+
+document.getElementById('admin-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeAdminModal();
+});
+
+document.getElementById('admin-token-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') adminReset();
+  if (e.key === 'Escape') closeAdminModal();
+});
+
+function closeAdminModal() {
+  document.getElementById('admin-modal').style.display = 'none';
+}
+
+async function adminReset() {
+  const token = document.getElementById('admin-token-input').value.trim();
+  const msg   = document.getElementById('admin-msg');
+  if (!token) { msg.textContent = 'Enter token'; return; }
+
+  const res  = await fetch('/api/admin/reset', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ token }),
+  });
+  const data = await res.json();
+
+  if (data.ok) {
+    msg.style.color = 'green';
+    msg.textContent = 'Done — database cleared';
+    setTimeout(() => {
+      closeAdminModal();
+      loadArticles(true);
+      updateStats();
+    }, 1000);
+  } else {
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'Wrong token';
+    document.getElementById('admin-token-input').value = '';
+  }
+}
 
 // ── Init ──────────────────────────────────────────────────
 applyView(currentView);
